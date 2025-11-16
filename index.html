@@ -42,7 +42,7 @@
     <input name="instrument" />
 
     <label>Chaperone</label>
-    <select name="chaperone" id="chaperone" required>
+    <select name="group_name" id="group_name" required>
       <option value="">Loading chaperones...</option>
     </select>
 
@@ -126,7 +126,7 @@
       try {
         const chapsSnap = await getDocs(collection(db, 'chaperones'));
         const chaperones = chapsSnap.docs.map(d => d.data().name).sort();
-        const select = document.getElementById('chaperone');
+        const select = document.getElementById('group_name');
         select.innerHTML = '<option value="">Select your chaperone</option>';
         
         if (chaperones.length === 0) {
@@ -142,7 +142,7 @@
         chaperonesLoaded = true;
       } catch (err) {
         console.error('Error loading chaperones:', err);
-        const select = document.getElementById('chaperone');
+        const select = document.getElementById('group_name');
         select.innerHTML = '<option value="">Error loading chaperones</option>';
         chaperonesLoaded = true; // Allow submission even if loading fails
       }
@@ -159,7 +159,7 @@
       const payload = {
         student_name: fd.get('student_name')?.trim(),
         instrument: fd.get('instrument') || "",
-        chaperone: fd.get('chaperone') || "",
+        group_name: fd.get('group_name') || "",
         been_before: fd.get('been_before') || "",
         ridden_coasters_before: fd.get('ridden_coasters_before') || "",
         coaster_comfort: parseInt(fd.get('coaster_comfort') || 0, 10),

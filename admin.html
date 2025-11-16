@@ -498,7 +498,7 @@
       submissionsData = snap.docs.map(d => d.data());
       
       // Populate chaperone dropdown
-      const chaperones = [...new Set(submissionsData.map(s => s.chaperone).filter(c => c))].sort();
+      const chaperones = [...new Set(submissionsData.map(s => s.group_name).filter(c => c))].sort();
       const chaperoneSelect = document.getElementById('chaperoneFilter');
       chaperones.forEach(chap => {
         const option = document.createElement('option');
@@ -614,7 +614,7 @@
       if (activeFilters.chaperone === 'all') {
         return submissionsData;
       }
-      return submissionsData.filter(s => s.chaperone === activeFilters.chaperone);
+      return submissionsData.filter(s => s.group_name === activeFilters.chaperone);
     }
 
     function renderAnalytics(subs) {
