@@ -35,13 +35,29 @@
           <div class="section-title monoton-regular">Student Info</div>
 
   <form id="prefForm" class="card">
-    <label>Student Name *</label>
+    <label class="required">Student Name</label>
     <input name="student_name" required />
 
     <label>Instrument / Section</label>
-    <input name="instrument" />
+    <select name="instrument">
+      <option value="">Select your section</option>
+      <option value="Flute/Piccolo">Flute/Piccolo</option>
+      <option value="Clarinet">Clarinet</option>
+      <option value="Saxophone">Saxophone</option>
+      <option value="Oboe/Bassoon">Oboe/Bassoon</option>
+      <option value="Trumpet">Trumpet</option>
+      <option value="French Horn">French Horn</option>
+      <option value="Trombone">Trombone</option>
+      <option value="Baritone/Euphonium">Baritone/Euphonium</option>
+      <option value="Tuba">Tuba</option>
+      <option value="Percussion">Percussion</option>
+      <option value="Drum Line">Drum Line</option>
+      <option value="Front Ensemble/Pit">Front Ensemble/Pit</option>
+      <option value="Color Guard">Color Guard</option>
+      <option value="Drum Major">Drum Major</option>
+    </select>
 
-    <label>Chaperone</label>
+    <label class="required">Chaperone</label>
     <select name="group_name" id="group_name" required>
       <option value="">Loading chaperones...</option>
     </select>
@@ -63,7 +79,7 @@
       <option>No</option>
     </select>
 
-    <label>How do you feel about roller coasters? (1=no way, 5=love)</label>
+    <label class="required">How do you feel about roller coasters? (1=no way, 5=love)</label>
     <select name="coaster_comfort" required>
       <option value="">Select</option>
       <option>1</option><option>2</option><option>3</option>
@@ -79,11 +95,35 @@
       <label><input type="checkbox" name="sensitivities" value="None"> None</label>
     </div>
 
-    <label>Top 3 interests (comma-separated)</label>
-    <input name="top_themes" placeholder="Big coasters, Nintendo, Harry Potter" />
+    <label>Top Interests (select up to 5)</label>
+    <div class="chips">
+      <label><input type="checkbox" name="top_themes" value="Harry Potter"> Harry Potter</label>
+      <label><input type="checkbox" name="top_themes" value="Super Nintendo World"> Super Nintendo World</label>
+      <label><input type="checkbox" name="top_themes" value="Jurassic World"> Jurassic World</label>
+      <label><input type="checkbox" name="top_themes" value="Marvel Super Hero Island"> Marvel</label>
+      <label><input type="checkbox" name="top_themes" value="Transformers"> Transformers</label>
+      <label><input type="checkbox" name="top_themes" value="The Simpsons"> The Simpsons</label>
+      <label><input type="checkbox" name="top_themes" value="Minions"> Minions</label>
+      <label><input type="checkbox" name="top_themes" value="How to Train Your Dragon"> How to Train Your Dragon</label>
+      <label><input type="checkbox" name="top_themes" value="Dark Universe"> Dark Universe (Monsters)</label>
+      <label><input type="checkbox" name="top_themes" value="Dr. Seuss"> Dr. Seuss</label>
+      <label><input type="checkbox" name="top_themes" value="Ministry of Magic"> Ministry of Magic</label>
+      <label><input type="checkbox" name="top_themes" value="Fast & Furious"> Fast & Furious</label>
+    </div>
 
-    <label>Any rides/types to avoid?</label>
-    <textarea name="avoid_ride_list"></textarea>
+    <label>Any rides or experiences you want to avoid?</label>
+    <div class="chips">
+      <label><input type="checkbox" name="avoid_ride_list" value="VelociCoaster"> VelociCoaster (high thrill)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Hulk"> Hulk (inversions)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Rip Ride Rockit"> Rip Ride Rockit (steep drop)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Hagrid's"> Hagrid's (moderate thrill)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Scary/Dark rides"> Scary or dark themed rides</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Simulators"> Simulator rides (motion sickness)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Water rides"> Water rides (getting wet)</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Spinning rides"> Spinning rides</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="Heights"> Rides with heights/drops</label>
+      <label><input type="checkbox" name="avoid_ride_list" value="3D experiences"> 3D glasses experiences</label>
+    </div>
 
     <label>Universal Studios (USF) thoughts</label>
     <textarea name="usf_choices"></textarea>
@@ -164,8 +204,8 @@
         ridden_coasters_before: fd.get('ridden_coasters_before') || "",
         coaster_comfort: parseInt(fd.get('coaster_comfort') || 0, 10),
         sensitivities: fd.getAll('sensitivities'),
-        top_themes: (fd.get('top_themes') || "").split(',').map(s=>s.trim()).filter(Boolean),
-        avoid_ride_list: (fd.get('avoid_ride_list') || "").split(',').map(s=>s.trim()).filter(Boolean),
+        top_themes: fd.getAll('top_themes').filter(Boolean),
+        avoid_ride_list: fd.getAll('avoid_ride_list').filter(Boolean),
         usf_choices: fd.get('usf_choices') || "",
         ioa_choices: fd.get('ioa_choices') || "",
         epic_choices: fd.get('epic_choices') || "",
