@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Universal Trip Preferences</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Monoton&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link href="./styles.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-row">
+        <div class="app-title">
+          <span class="icon">🎺</span>
+          <span class="universal-title">Universal Trip Preferences</span>
+          <div class="decorative-subtitle monoton-regular">An Epic Universal Adventure</div>
+        </div>
+        <div class="theme-selector" aria-hidden="false">
+          <button id="theme-selector" aria-label="Theme selector" title="Change theme"><span class="icon">☀️</span><span class="label">Light</span></button>
+        </div>
+        <span class="app-badge">Band • Middle School</span>
+      </div>
+      <p class="app-subtitle">
+        Tell us what you like so we can build the best route through Universal Studios, Islands of Adventure, and Epic Universe.
+      </p>
+    </header>
+  <main>
+        <div class="card">
+          <div class="section-title monoton-regular">Student Info</div>
+
+  <form id="prefForm" class="card">
+    <label>Student Name *</label>
+    <input name="student_name" required />
+
+    <label>Instrument / Section</label>
+    <input name="instrument" />
+
+    <label>Chaperone Group (if known)</label>
+    <input name="group_name" />
+
+    <label>Have you ever been to Universal Orlando?</label>
+    <select name="been_before">
+      <option value="">Select</option>
+      <option>No, first time</option>
+      <option>Yes, once</option>
+      <option>Yes, multiple times</option>
+    </select>
+
+    <label>Have you ridden big roller coasters before?</label>
+    <select name="ridden_coasters_before">
+      <option value="">Select</option>
+      <option>Yes, and I like them</option>
+      <option>Yes, but I didn't like them</option>
+      <option>Only small / kiddie coasters</option>
+      <option>No</option>
+    </select>
+
+    <label>How do you feel about roller coasters? (1=no way, 5=love)</label>
+    <select name="coaster_comfort" required>
+      <option value="">Select</option>
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option>
+    </select>
+
+    <label>Sensitivities</label>
+    <div class="chips">
+      <label><input type="checkbox" name="sensitivities" value="Motion sickness"> Motion sickness</label>
+      <label><input type="checkbox" name="sensitivities" value="Heights"> Heights</label>
+      <label><input type="checkbox" name="sensitivities" value="Fast drops"> Fast drops</label>
+      <label><input type="checkbox" name="sensitivities" value="Scary / dark"> Scary / dark</label>
+      <label><input type="checkbox" name="sensitivities" value="None"> None</label>
+    </div>
+
+    <label>Top 3 interests (comma-separated)</label>
+    <input name="top_themes" placeholder="Big coasters, Nintendo, Harry Potter" />
+
+    <label>Any rides/types to avoid?</label>
+    <textarea name="avoid_ride_list"></textarea>
+
+    <label>Universal Studios (USF) thoughts</label>
+    <textarea name="usf_choices"></textarea>
+
+    <label>Islands of Adventure (IOA) thoughts</label>
+    <textarea name="ioa_choices"></textarea>
+
+    <label>Epic Universe thoughts</label>
+    <textarea name="epic_choices"></textarea>
+
+    <label>Parent/Guardian ride rules</label>
+    <textarea name="parent_restrictions"></textarea>
+
+    <label>Anything else?</label>
+    <textarea name="notes"></textarea>
+
+    <button type="submit">Submit</button>
+    <div id="status"></div>
+  </form>
+
+  <script type="module">
+    //remove this code in Github repo version
+    // App Check initialization is handled in `firebase-init.js` (modular imports).
+    // The inline call here duplicated the initialization and ran before imports,
+    // causing `initializeAppCheck` to be undefined. Removed.
+
+    import { db, auth, ensureAnonymousAuth, serverTimestamp } from './firebase-init.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    // Safety check: if App Check debug token was enabled, warn so you don't ship it to production.
+    if (self.FIREBASE_APPCHECK_DEBUG_TOKEN) {
+      console.warn('App Check debug token is enabled (firebase-init.js). Ensure this is disabled before publishing to production.');
+    }
+
+    const form = document.getElementById('prefForm');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = "Submitting...";
+      const fd = new FormData(form);
+
+      const payload = {
+        student_name: fd.get('student_name')?.trim(),
+        instrument: fd.get('instrument') || "",
+        group_name: fd.get('group_name') || "",
+        been_before: fd.get('been_before') || "",
+        ridden_coasters_before: fd.get('ridden_coasters_before') || "",
+        coaster_comfort: parseInt(fd.get('coaster_comfort') || 0, 10),
+        sensitivities: fd.getAll('sensitivities'),
+        top_themes: (fd.get('top_themes') || "").split(',').map(s=>s.trim()).filter(Boolean),
+        avoid_ride_list: (fd.get('avoid_ride_list') || "").split(',').map(s=>s.trim()).filter(Boolean),
+        usf_choices: fd.get('usf_choices') || "",
+        ioa_choices: fd.get('ioa_choices') || "",
+        epic_choices: fd.get('epic_choices') || "",
+        parent_restrictions: fd.get('parent_restrictions') || "",
+        notes: fd.get('notes') || "",
+        timestamp: serverTimestamp(),
+      };
+
+      try {
+        await ensureAnonymousAuth(); // invisible to student
+        payload.uid = auth.currentUser.uid;
+        await addDoc(collection(db, 'submissions'), payload);
+        statusEl.textContent = "Thanks! Your preferences were recorded.";
+        form.reset();
+      } catch (err) {
+        console.error('Form submission error:', err);
+        statusEl.textContent = `Error: ${err.code || err.message}`;
+      }
+    });
+  </script>
+  <script>
+    (function(){
+      const btn = document.getElementById('theme-selector');
+      const root = document.documentElement;
+      const themes = ['light','dark','universal'];
+      const icons = { light: '☀️', dark: '🌙', universal: '🌐' };
+      const labels = { light: 'Light', dark: 'Dark', universal: 'Universal' };
+      function applyTheme(t){
+        root.classList.remove('theme-dark','theme-universal');
+        if (t === 'dark') root.classList.add('theme-dark');
+        if (t === 'universal') root.classList.add('theme-universal');
+        localStorage.setItem('theme', t);
+        if (!btn) return;
+        btn.querySelector('.icon').textContent = icons[t] || '';
+        btn.querySelector('.label').textContent = labels[t] || t;
+      }
+
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const start = stored || (prefersDark ? 'dark' : 'light');
+      applyTheme(start);
+
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const cur = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+          const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+          applyTheme(next);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

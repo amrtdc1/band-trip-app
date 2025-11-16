@@ -1,0 +1,18 @@
+// Example production initializer (DO NOT commit real keys).
+// Copy this file to `firebase-init.prod.js` and fill in the values during deploy.
+
+export const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Replace with your ReCaptcha Enterprise public key for production App Check.
+export const RECAPTCHA_ENTERPRISE_PUBLIC_KEY = "RECAPTCHA_ENTERPRISE_PUBLIC_KEY";
+
+// NOTE: After filling these values, copy to `firebase-init.prod.js` and ensure
+// `firebase-init.prod.js` is NOT committed to source control. Use the provided
+// `tools/switch-firebase-init.js` to copy the prod file into place when needed.

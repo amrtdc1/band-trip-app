@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin – Universal Analytics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="./styles.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title-row">
+        <div class="app-title">
+          <span class="icon">🎛️</span>
+          <span>Universal Trip – Admin</span>
+        </div>
+        <div class="theme-toggle" aria-hidden="false">
+          <input id="theme-toggle" type="checkbox" aria-label="Toggle theme" />
+          <label class="switch" for="theme-toggle" title="Toggle theme"></label>
+        </div>
+        <span class="app-badge">Director View</span>
+      </div>
+      <p class="app-subtitle">
+        Live analytics and recommended itinerary based on student submissions.
+      </p>
+    </header>
+
+  <div id="gate" class="card">
+    <p>Sign in with your Google account to view analytics & itinerary.</p>
+    <button id="login">Sign in with Google</button>
+    <div id="who" class="muted"></div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <p id="currentUser" style="margin: 0;"></p>
+      </div>
+      <button id="logout" style="padding: 8px 16px;">Sign out</button>
+    </div>
+
+    <div class="card">
+      <h2>Group Snapshot</h2>
+      <div id="summary"></div>
+    </div>
+
+    <div class="card">
+      <h2>Preferences</h2>
+      <h3>Coaster Comfort</h3>
+      <div id="comfort"></div>
+      <h3>Top Themes</h3>
+      <div id="themes"></div>
+      <h3>Common Avoids</h3>
+      <div id="avoids"></div>
+    </div>
+
+    <div class="card">
+      <h2>Recommended Itinerary</h2>
+      <pre id="itinerary"></pre>
+    </div>
+
+    <div class="card">
+      <button id="download">Download JSON</button>
+      <span id="status"></span>
+    </div>
+  </div>
+
+  <script type="module">
+    import { app, auth, onAuth, signInAdminWithGoogle } from './firebase-init.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const db = getFirestore(app);
+    const loginBtn = document.getElementById('login');
+    const logoutBtn = document.getElementById('logout');
+    const who = document.getElementById('who');
+    const currentUser = document.getElementById('currentUser');
+    const appDiv = document.getElementById('app');
+    const gate = document.getElementById('gate');
+
+    loginBtn.addEventListener('click', signInAdminWithGoogle);
+    logoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => {
+        console.log('Signed out successfully');
+        gate.style.display = 'block';
+        appDiv.style.display = 'none';
+        who.textContent = '';
+        currentUser.textContent = '';
+      }).catch(err => {
+        console.error('Error signing out:', err);
+      });
+    });
+
+    onAuth(async (user) => {
+      if (!user) return;
+      who.textContent = user.email || "(signed in)";
+
+      // Check custom admin claim set via Firebase Admin SDK
+      try {
+        const idTokenResult = await user.getIdTokenResult(true);
+        const isAdmin = !!idTokenResult.claims.admin;
+
+        if (!isAdmin) {
+          who.textContent = `Access denied for ${user.email || 'unknown user'} (not an admin)`;
+          return;
+        }
+
+        gate.style.display = 'none';
+        appDiv.style.display = 'block';
+        currentUser.textContent = `Logged in as: ${user.email}`;
+        await loadAndRender();
+      } catch (err) {
+        console.error('Error checking admin claim:', err);
+        who.textContent = 'Error verifying admin status';
+      }
+    });
+
+    async function loadAndRender() {
+      const status = document.getElementById('status');
+
+      // OPTION A: read precomputed analytics doc (if you deploy the Cloud Function)
+      const analyticsDoc = await getDoc(doc(db, 'admin', 'analytics'));
+      if (analyticsDoc.exists()) {
+        const a = analyticsDoc.data();
+        renderFromAnalytics(a);
+        status.textContent = "Loaded admin analytics.";
+        return;
+      }
+
+      // OPTION B: fallback – compute in the browser from raw submissions (rules must allow admin read)
+      const snap = await getDocs(query(collection(db, 'submissions'), orderBy('timestamp', 'asc')));
+      const subs = snap.docs.map(d => d.data());
+      renderFromSubs(subs);
+      status.textContent = `Loaded ${subs.length} submissions (client-side analytics).`;
+    }
+
+    function renderFromAnalytics(a) {
+      // a.totals, a.themeCounts, a.avoidCounts, a.thrillBreakdown
+      const total = a.totals?.count || 0;
+      const buckets = a.thrillBreakdown || {thrill:0, flexible:0, cautious:0};
+      const pct = n => total ? Math.round((n/total)*100) + "%" : "0%";
+
+      document.getElementById('summary').innerHTML = `
+        <div>Total submissions: <b>${total}</b></div>
+        <div>Thrill: <b>${buckets.thrill}</b> (${pct(buckets.thrill)}),
+             Flexible: <b>${buckets.flexible}</b> (${pct(buckets.flexible)}),
+             Cautious: <b>${buckets.cautious}</b> (${pct(buckets.cautious)})</div>
+      `;
+
+      // Present small summaries
+      const comfort = a.comfortCounts || {1:0,2:0,3:0,4:0,5:0};
+      document.getElementById('comfort').innerHTML =
+        Object.entries(comfort).map(([k,v])=> v? `<span class="pill">${k}: ${v} (${pct(v)})</span>`:"").join("") || "—";
+
+      document.getElementById('themes').innerHTML =
+        topN(a.themeCounts, 10, total);
+
+      document.getElementById('avoids').innerHTML =
+        topN(a.avoidCounts, 20, total, false);
+
+      document.getElementById('itinerary').textContent =
+        buildItinerary(total, buckets, a.themeCounts || {}, a.avoidCounts || {});
+
+      // download button uses a.sanitizedSubmissions if you store it; else skip
+      document.getElementById('download').onclick = () => {
+        const blob = new Blob([JSON.stringify(a.rawSample || {}, null, 2)], {type:'application/json'});
+        const aTag = document.createElement('a');
+        aTag.href = URL.createObjectURL(blob);
+        aTag.download = 'universal_band_trip_responses.json';
+        aTag.click();
+        URL.revokeObjectURL(aTag.href);
+      };
+    }
+
+    function renderFromSubs(subs) {
+      const total = subs.length;
+      const comfortCounts = {1:0,2:0,3:0,4:0,5:0};
+      const themes = {};
+      const avoidCounts = {};
+      const buckets = { thrill:0, flexible:0, cautious:0 };
+
+      subs.forEach(s => {
+        const c = Number(s.coaster_comfort||0);
+        if (comfortCounts[c]!=null) comfortCounts[c]++;
+        if (c>=4) buckets.thrill++; else if (c===3) buckets.flexible++; else if (c>0) buckets.cautious++;
+
+        (s.top_themes||[]).forEach(t => {
+          const k = t.trim().toLowerCase();
+          if (!k) return;
+          themes[k] = (themes[k]||0)+1;
+        });
+
+        const avoidText = [
+          ...(s.avoid_ride_list || []),
+          s.usf_choices||"", s.ioa_choices||"", s.epic_choices||"", s.parent_restrictions||""
+        ].join(" ").toLowerCase();
+
+        ["velocicoaster","hulk","rip ride rockit","hagrid","dark universe","scary",
+         "heights","motion sickness","simulator","big drops","inversion"]
+         .forEach(k => { if (avoidText.includes(k)) avoidCounts[k]=(avoidCounts[k]||0)+1; });
+      });
+
+      const pct = n => total? Math.round((n/total)*100) + "%":"0%";
+      document.getElementById('summary').innerHTML = `
+        <div>Total submissions: <b>${total}</b></div>
+        <div>Thrill: <b>${buckets.thrill}</b> (${pct(buckets.thrill)}),
+             Flexible: <b>${buckets.flexible}</b> (${pct(buckets.flexible)}),
+             Cautious: <b>${buckets.cautious}</b> (${pct(buckets.cautious)})</div>
+      `;
+
+      document.getElementById('comfort').innerHTML =
+        Object.entries(comfortCounts).map(([k,v])=> v? `<span class="pill">${k}: ${v} (${pct(v)})</span>`:"").join("") || "—";
+
+      document.getElementById('themes').innerHTML = topN(themes, 10, total);
+      document.getElementById('avoids').innerHTML = topN(avoidCounts, 20, total, false);
+
+      document.getElementById('itinerary').textContent =
+        buildItinerary(total, buckets, themes, avoidCounts);
+
+      document.getElementById('download').onclick = () => {
+        const blob = new Blob([JSON.stringify({ submissions: subs }, null, 2)], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'universal_band_trip_responses.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    }
+
+    function topN(map, n, total, showPct = true) {
+      const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);
+      if (!sorted.length) return "—";
+      const pct = c => total? Math.round((c/total)*100)+"%" : "0%";
+      return sorted.map(([k,c]) => `<span class="pill">${k}${showPct?` (${pct(c)})`:`: ${c}`}</span>`).join("");
+    }
+
+    function buildItinerary(total, buckets, themes, avoid) {
+      const t = n => total? (n/total):0;
+      const want = k => (themes[k]||0);
+      const manyThrill = t(buckets.thrill) >= 0.4;
+      const manyCaut  = t(buckets.cautious) >= 0.25;
+      const hp   = want("harry potter") >= total*0.3;
+      const nint = want("nintendo") >= total*0.2 || want("super nintendo world") >= total*0.2;
+      const bigC = want("big coasters") >= total*0.25;
+      const hatesDark = (avoid["dark universe"]||0) >= total*0.2 || (avoid["scary"]||0) >= total*0.2;
+
+      let out = "";
+      out += "THU (Arrival – Afternoon):\n";
+      out += (manyThrill || hp)
+        ? "- Start at Islands of Adventure. Prioritize Hogsmeade/Hagrid's; thrill block: Hulk/VelociCoaster.\n"
+        : "- Start at Universal Studios Florida: Minions, shows, Diagon Alley walk-through.\n";
+      if (manyCaut) out += "- Parallel gentle track (Seuss / milder attractions) during thrill block.\n";
+      out += "\nFRI (Full Day – Studios + Islands):\n";
+      out += "- Rope drop highest-interest headliners; schedule a clear thrill block (Hagrid's, VelociCoaster, Hulk, Mummy).\n";
+      if (manyCaut) out += "- Provide calm track each time (Minions/Seuss/Potter without the top coasters).\n";
+      out += "- Midday indoor shows; evening hop to clean up remaining must-dos.\n\n";
+      out += "SAT (Epic Universe):\n";
+      out += nint ? "- Rope drop Super Nintendo World.\n"
+           : hp   ? "- Prioritize Ministry of Magic early.\n"
+                  : "- Start at Celestial Park, then move to the most-requested land.\n";
+      out += hatesDark
+        ? "- Make Dark Universe optional only; default to Nintendo/Dragons/Ministry.\n"
+        : "- Offer Dark Universe as an optional thrill/horror block.\n";
+      out += "- Afternoon: Isle of Berk; Evening: repeats + calm closer + group photo.\n";
+      return out;
+    }
+  </script>
+  <script>
+    (function(){
+      const toggle = document.getElementById('theme-toggle');
+      const root = document.documentElement;
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const startDark = stored ? stored === 'dark' : prefersDark;
+      if (startDark) { root.classList.add('theme-dark'); if (toggle) toggle.checked = true; }
+      if (toggle) {
+        toggle.addEventListener('change', () => {
+          if (toggle.checked) { root.classList.add('theme-dark'); localStorage.setItem('theme','dark'); }
+          else { root.classList.remove('theme-dark'); localStorage.setItem('theme','light'); }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

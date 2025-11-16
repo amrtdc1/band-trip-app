@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      // Preferred: custom claims set via Admin SDK
+      return request.auth.token.admin == true;
+      // Alt: allow-list by email
+      // return request.auth.token.email in ["you@yourdomain.com","chaperone@gmail.com"];
+    }
+
+    // Student submissions
+    match /submissions/{docId} {
+      // Anyone authenticated (anonymous is OK) can CREATE
+      allow create: if request.auth != null
+        && request.resource.data.student_name is string
+        && request.resource.data.coaster_comfort is int
+        && request.resource.data.coaster_comfort >= 1
+        && request.resource.data.coaster_comfort <= 5;
+
+      // No general read/update/delete
+      allow read, update, delete: if false;
+    }
+
+    // Optional: materialized analytics doc for admins only
+    match /admin/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // If you want admin.html to read raw submissions directly:
+    match /submissions/{docId} {
+      allow read: if isAdmin();
+    }
+  }
+}

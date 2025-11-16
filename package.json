@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "firebase-admin": "^13.6.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.30.0"
+  }
+  ,
+  "scripts": {
+    "use:local": "node ./tools/switch-firebase-init.js local",
+    "use:prod": "node ./tools/switch-firebase-init.js prod"
+  }
+}

@@ -1,0 +1,21 @@
+# Node
+node_modules/
+npm-debug.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase and local secrets (keep local dev files private)
+firebase-init.prod.js
+firebase-initLocal.js
+serviceAccountKey.json
+*.key
+*.pem
+
+# Note: firebase-init.js is NOT ignored - it's the public version for GitHub Pages
+# Firebase API keys are safe to expose publicly (protected by Firestore rules)
+
+# Optional artifacts
+screenshots/
+.env
