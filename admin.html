@@ -517,7 +517,8 @@
       renderAnalytics(submissionsData);
       initializeItineraryBuilder();
       setupDataExport(submissionsData);
-      loadChaperones();
+      await loadChaperones();
+      setupChaperoneManagement();
     }
     
     async function loadChaperones() {
@@ -561,38 +562,53 @@
       chaperoneSelect.value = currentValue;
     }
     
-    // Add chaperone button handler
-    document.getElementById('addChaperoneBtn').addEventListener('click', async () => {
+    function setupChaperoneManagement() {
+      // Add chaperone button handler
+      const addBtn = document.getElementById('addChaperoneBtn');
       const input = document.getElementById('newChaperoneName');
-      const name = input.value.trim();
       
-      if (!name) {
-        alert('Please enter a chaperone name.');
+      if (!addBtn || !input) {
+        console.error('Chaperone management elements not found');
         return;
       }
       
-      // Check for duplicates
-      const existing = await getDocs(query(collection(db, 'chaperones')));
-      const duplicate = existing.docs.find(d => d.data().name.toLowerCase() === name.toLowerCase());
+      addBtn.addEventListener('click', async () => {
+        const name = input.value.trim();
+        
+        if (!name) {
+          alert('Please enter a chaperone name.');
+          return;
+        }
+        
+        try {
+          // Check for duplicates
+          const existing = await getDocs(collection(db, 'chaperones'));
+          const duplicate = existing.docs.find(d => d.data().name.toLowerCase() === name.toLowerCase());
+          
+          if (duplicate) {
+            alert('This chaperone already exists in the list.');
+            return;
+          }
+          
+          // Add to Firestore
+          await setDoc(doc(collection(db, 'chaperones')), { name });
+          input.value = '';
+          await loadChaperones();
+          alert(`✅ ${name} added successfully!`);
+        } catch (err) {
+          console.error('Error adding chaperone:', err);
+          alert(`❌ Error adding chaperone: ${err.message}`);
+        }
+      });
       
-      if (duplicate) {
-        alert('This chaperone already exists in the list.');
-        return;
-      }
-      
-      // Add to Firestore
-      await setDoc(doc(collection(db, 'chaperones')), { name });
-      input.value = '';
-      loadChaperones();
-      alert(`✅ ${name} added successfully!`);
-    });
-    
-    // Allow Enter key to add chaperone
-    document.getElementById('newChaperoneName').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('addChaperoneBtn').click();
-      }
-    });
+      // Allow Enter key to add chaperone
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addBtn.click();
+        }
+      });
+    }
     
     function getFilteredSubmissions() {
       if (activeFilters.chaperone === 'all') {

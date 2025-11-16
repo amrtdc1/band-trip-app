@@ -40,14 +40,16 @@
 </head>
 <body>
   <h1>🎯 Seed Initial Chaperones</h1>
-  <p>This will add the default chaperone list to Firestore. Run this once, then you can manage chaperones from the admin page.</p>
+  <p>This will add the default chaperone list to Firestore.</p>
+  <p><strong>Note:</strong> You must be signed in as an admin. Sign in to the admin page first, then come back here.</p>
   
   <button id="seedBtn">Seed Chaperones</button>
   <div id="status"></div>
 
   <script type="module">
-    import { app, auth, signInAdminWithGoogle, onAuth } from './firebase-init.js';
+    import { app, auth } from './firebase-init.js';
     import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
     const db = getFirestore(app);
     
@@ -60,8 +62,31 @@
       "Mrs. Brown",
       "Mr. Martinez"
     ];
+    
+    let isSignedIn = false;
+    
+    onAuthStateChanged(auth, (user) => {
+      isSignedIn = !!user;
+      const btn = document.getElementById('seedBtn');
+      if (!user) {
+        btn.textContent = '🔒 Sign in as admin first';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.textContent = 'Seed Chaperones';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
+    });
 
     document.getElementById('seedBtn').addEventListener('click', async () => {
+      if (!isSignedIn) {
+        alert('Please sign in to the admin page first, then reload this page.');
+        return;
+      }
+      
       const statusDiv = document.getElementById('status');
       statusDiv.style.display = 'block';
       statusDiv.className = '';
@@ -78,27 +103,28 @@
         }
 
         let added = 0;
+        const errors = [];
+        
         for (const name of defaultChaperones) {
-          await setDoc(doc(collection(db, 'chaperones')), { name });
-          added++;
+          try {
+            await setDoc(doc(collection(db, 'chaperones')), { name });
+            added++;
+          } catch (err) {
+            errors.push(`${name}: ${err.message}`);
+          }
         }
 
-        statusDiv.className = 'success';
-        statusDiv.textContent = `✅ Successfully added ${added} chaperones! You can now manage them from the admin page.`;
+        if (errors.length > 0) {
+          statusDiv.className = 'error';
+          statusDiv.textContent = `⚠️ Added ${added} chaperones. Errors:\n${errors.join('\n')}`;
+        } else {
+          statusDiv.className = 'success';
+          statusDiv.textContent = `✅ Successfully added ${added} chaperones! You can now manage them from the admin page.`;
+        }
       } catch (err) {
         statusDiv.className = 'error';
-        statusDiv.textContent = `❌ Error: ${err.message}`;
-        console.error(err);
-      }
-    });
-
-    // Check auth status
-    onAuth((user) => {
-      if (!user) {
-        document.getElementById('seedBtn').textContent = 'Sign in first';
-        document.getElementById('seedBtn').addEventListener('click', () => {
-          alert('Please sign in as admin in the main app first, then reload this page.');
-        });
+        statusDiv.textContent = `❌ Error: ${err.message}\n\nMake sure you're signed in as an admin with proper permissions.`;
+        console.error('Full error:', err);
       }
     });
   </script>
