@@ -281,9 +281,27 @@
       <div id="itinerary" class="tab-content">
         <div class="card">
           <h2>Drag & Drop Itinerary Builder</h2>
-          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+          <p style="color: var(--color-text-muted); margin-bottom: 0.5rem;">
             Drag attractions from the library into time slots. Remove items by clicking the × button.
           </p>
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="autoGenerateBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 0.75rem 1.5rem;">
+              ✨ Auto-Generate from Survey Data
+            </button>
+            <button type="button" id="clearScheduleBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 0.75rem 1.5rem;">
+              🗑️ Clear Schedule
+            </button>
+          </div>
+          <div style="background: var(--color-surface); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--color-border-subtle);">
+            <h4 style="margin-top: 0; font-size: 0.9rem;">📖 Category Legend</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.85rem;">
+              <div><strong>🎢</strong> Thrill Rides (Major Coasters)</div>
+              <div><strong>🎡</strong> Family Rides (Minor/Dark Rides)</div>
+              <div><strong>🎭</strong> Shows & Entertainment</div>
+              <div><strong>🍔</strong> Dining & Food</div>
+              <div><strong>🎪</strong> Interactive Experiences</div>
+            </div>
+          </div>
           <div class="itinerary-builder">
             <div class="attractions-library" id="attractionsLibrary">
               <h4>🎢 Attractions Library</h4>
@@ -489,21 +507,93 @@
 
     function initializeItineraryBuilder() {
       const attractions = [
-        {name: "Hagrid's Magical Creatures", park: "IOA"},
-        {name: "VelociCoaster", park: "IOA"},
-        {name: "Hulk", park: "IOA"},
-        {name: "Harry Potter - Forbidden Journey", park: "IOA"},
-        {name: "Spider-Man", park: "IOA"},
-        {name: "Seuss Landing", park: "IOA"},
-        {name: "Rip Ride Rockit", park: "USF"},
-        {name: "Mummy", park: "USF"},
-        {name: "Gringotts", park: "USF"},
-        {name: "Minions", park: "USF"},
-        {name: "Transformers", park: "USF"},
-        {name: "Super Nintendo World", park: "Epic"},
-        {name: "Ministry of Magic", park: "Epic"},
-        {name: "Dark Universe", park: "Epic"},
-        {name: "How to Train Your Dragon", park: "Epic"}
+        // IOA - Thrill Rides
+        {name: "VelociCoaster", park: "IOA", category: "🎢", type: "Thrill Ride"},
+        {name: "Hulk", park: "IOA", category: "🎢", type: "Thrill Ride"},
+        {name: "Hagrid's Magical Creatures", park: "IOA", category: "🎢", type: "Thrill Ride"},
+        {name: "Doctor Doom's Fearfall", park: "IOA", category: "🎢", type: "Thrill Ride"},
+        
+        // IOA - Family Rides
+        {name: "Harry Potter - Forbidden Journey", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Flight of the Hippogriff", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Spider-Man", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Jurassic World River Adventure", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Skull Island: Reign of Kong", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Poseidon's Fury", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Cat in the Hat", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "One Fish Two Fish", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Caro-Seuss-el", park: "IOA", category: "🎡", type: "Family Ride"},
+        {name: "Storm Force Accelatron", park: "IOA", category: "🎡", type: "Family Ride"},
+        
+        // IOA - Shows & Interactive
+        {name: "Raptor Encounter", park: "IOA", category: "🎭", type: "Show"},
+        {name: "Ollivanders Wand Shop", park: "IOA", category: "🎪", type: "Interactive"},
+        {name: "Seuss Landing Play Area", park: "IOA", category: "🎪", type: "Interactive"},
+        
+        // IOA - Dining
+        {name: "Three Broomsticks", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Mythos Restaurant", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Thunder Falls Terrace", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Confisco Grille", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Comic Strip Cafe", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Green Eggs and Ham Cafe", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Croissant Moon Bakery", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "The Burger Digs", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Pizza Predattoria", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Blondie's", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Circus McGurkus", park: "IOA", category: "🍔", type: "Dining"},
+        {name: "Hop on Pop Ice Cream", park: "IOA", category: "🍔", type: "Dining"},
+        
+        // USF - Thrill Rides
+        {name: "Rip Ride Rockit", park: "USF", category: "🎢", type: "Thrill Ride"},
+        
+        // USF - Family Rides
+        {name: "Harry Potter - Gringotts", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Revenge of the Mummy", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Transformers", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Men in Black", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "E.T. Adventure", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Minions Mayhem", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "The Simpsons Ride", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Fast & Furious", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Kang & Kodos' Twirl 'n' Hurl", park: "USF", category: "🎡", type: "Family Ride"},
+        {name: "Woody Woodpecker Coaster", park: "USF", category: "🎡", type: "Family Ride"},
+        
+        // USF - Shows
+        {name: "Horror Make-Up Show", park: "USF", category: "🎭", type: "Show"},
+        {name: "Animal Actors", park: "USF", category: "🎭", type: "Show"},
+        {name: "Bourne Stuntacular", park: "USF", category: "🎭", type: "Show"},
+        
+        // USF - Interactive
+        {name: "Diagon Alley Exploration", park: "USF", category: "🎪", type: "Interactive"},
+        {name: "Springfield Area", park: "USF", category: "🎪", type: "Interactive"},
+        
+        // USF - Dining
+        {name: "Leaky Cauldron", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Florean Fortescue Ice Cream", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Finnegan's Bar & Grill", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Lombard's Seafood Grille", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Today Cafe", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Mel's Drive-In", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Louie's Italian Restaurant", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Fast Food Boulevard", park: "USF", category: "🍔", type: "Dining"},
+        {name: "San Francisco Pastry Co.", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Richter's Burger Co.", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Schwab's Pharmacy", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Beverly Hills Boulangerie", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Bumblebee Man's Taco Truck", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Lard Lad Donuts", park: "USF", category: "🍔", type: "Dining"},
+        {name: "Ben & Jerry's", park: "USF", category: "🍔", type: "Dining"},
+        
+        // Epic Universe
+        {name: "Super Nintendo World - Mario Kart", park: "Epic", category: "🎡", type: "Family Ride"},
+        {name: "How to Train Your Dragon", park: "Epic", category: "🎡", type: "Family Ride"},
+        {name: "Ministry of Magic Ride", park: "Epic", category: "🎡", type: "Family Ride"},
+        {name: "Dark Universe Attraction", park: "Epic", category: "🎡", type: "Family Ride"},
+        {name: "Super Nintendo World Exploration", park: "Epic", category: "🎪", type: "Interactive"},
+        {name: "Ministry of Magic Exploration", park: "Epic", category: "🎪", type: "Interactive"},
+        {name: "Toadstool Cafe", park: "Epic", category: "🍔", type: "Dining"},
+        {name: "Epic Universe Dining", park: "Epic", category: "🍔", type: "Dining"}
       ];
 
       const schedule = {
@@ -520,12 +610,30 @@
         card.draggable = true;
         card.dataset.attraction = JSON.stringify(attr);
         card.innerHTML = `
-          <div class="attraction-name">${attr.name}</div>
-          <div class="attraction-park">${attr.park}</div>
+          <div class="attraction-name">${attr.category} ${attr.name}</div>
+          <div class="attraction-park">${attr.park} • ${attr.type}</div>
         `;
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
         attractionsList.appendChild(card);
+      });
+
+      // Auto-generate button
+      document.getElementById('autoGenerateBtn').addEventListener('click', () => {
+        if (!submissionsData || submissionsData.length === 0) {
+          alert('No survey data available to generate itinerary.');
+          return;
+        }
+        generateSuggestedItinerary(submissionsData, attractions, schedule);
+      });
+
+      // Clear schedule button
+      document.getElementById('clearScheduleBtn').addEventListener('click', () => {
+        if (confirm('Clear entire schedule?')) {
+          document.querySelectorAll('.timeslot-items').forEach(container => {
+            container.innerHTML = '';
+          });
+        }
       });
 
       // Render schedule grid
@@ -589,13 +697,137 @@
         const scheduledItem = document.createElement('div');
         scheduledItem.className = 'scheduled-item';
         scheduledItem.innerHTML = `
-          <span><strong>${data.name}</strong> (${data.park})</span>
+          <span>${data.category} <strong>${data.name}</strong> (${data.park})</span>
           <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
         `;
         itemsContainer.appendChild(scheduledItem);
       }
 
       return false;
+    }
+
+    function generateSuggestedItinerary(subs, attractions, schedule) {
+      // Clear existing schedule
+      document.querySelectorAll('.timeslot-items').forEach(container => {
+        container.innerHTML = '';
+      });
+
+      // Analyze survey data
+      const comfortSum = subs.reduce((sum, s) => sum + Number(s.coaster_comfort || 0), 0);
+      const avgComfort = comfortSum / subs.length;
+      const thrillCount = subs.filter(s => Number(s.coaster_comfort) >= 4).length;
+      const cautiousCount = subs.filter(s => Number(s.coaster_comfort) <= 2).length;
+      
+      const allThemes = subs.flatMap(s => (s.top_themes || []).map(t => t.toLowerCase()));
+      const themeCounts = {};
+      allThemes.forEach(t => {
+        if (t) themeCounts[t] = (themeCounts[t] || 0) + 1;
+      });
+
+      const avoidText = subs.flatMap(s => [
+        ...(s.avoid_ride_list || []),
+        s.usf_choices || "",
+        s.ioa_choices || "",
+        s.epic_choices || "",
+        s.parent_restrictions || ""
+      ]).join(" ").toLowerCase();
+
+      // Build suggested itinerary
+      const suggested = {
+        thursday: [],
+        friday: [],
+        saturday: []
+      };
+
+      // Thursday (2PM-6PM arrival day, lighter schedule)
+      suggested.thursday = [
+        attractions.find(a => a.name.includes("Diagon Alley")),
+        attractions.find(a => a.name === "Harry Potter - Gringotts"),
+        attractions.find(a => a.name === "Leaky Cauldron"),
+        attractions.find(a => a.name === "Florean Fortescue Ice Cream"),
+        attractions.find(a => a.name === "Bourne Stuntacular")
+      ];
+
+      // Friday (Full day - IOA focus)
+      if (avgComfort >= 3.5) {
+        // Thrill-heavy group
+        suggested.friday = [
+          attractions.find(a => a.name === "VelociCoaster"),
+          attractions.find(a => a.name === "Three Broomsticks"),
+          attractions.find(a => a.name === "Hagrid's Magical Creatures"),
+          attractions.find(a => a.name === "Harry Potter - Forbidden Journey"),
+          attractions.find(a => a.name === "Mythos Restaurant"),
+          !avoidText.includes("hulk") ? attractions.find(a => a.name === "Hulk") : attractions.find(a => a.name === "Spider-Man"),
+          attractions.find(a => a.name === "Jurassic World River Adventure"),
+          attractions.find(a => a.name === "Hop on Pop Ice Cream"),
+          attractions.find(a => a.name === "Skull Island: Reign of Kong"),
+          attractions.find(a => a.name === "Cat in the Hat")
+        ];
+      } else {
+        // Family-friendly group
+        suggested.friday = [
+          attractions.find(a => a.name === "Harry Potter - Forbidden Journey"),
+          attractions.find(a => a.name === "Three Broomsticks"),
+          attractions.find(a => a.name === "Flight of the Hippogriff"),
+          attractions.find(a => a.name === "Ollivanders Wand Shop"),
+          attractions.find(a => a.name === "Mythos Restaurant"),
+          attractions.find(a => a.name === "Spider-Man"),
+          attractions.find(a => a.name === "Cat in the Hat"),
+          attractions.find(a => a.name === "Hop on Pop Ice Cream"),
+          attractions.find(a => a.name === "Seuss Landing Play Area"),
+          attractions.find(a => a.name === "One Fish Two Fish")
+        ];
+      }
+
+      // Saturday (Epic Universe or mixed)
+      if (themeCounts['nintendo'] >= subs.length * 0.3 || themeCounts['super nintendo'] >= subs.length * 0.3) {
+        suggested.saturday = [
+          attractions.find(a => a.name === "Super Nintendo World - Mario Kart"),
+          attractions.find(a => a.name === "Super Nintendo World Exploration"),
+          attractions.find(a => a.name === "Toadstool Cafe"),
+          attractions.find(a => a.name === "Ministry of Magic Ride"),
+          attractions.find(a => a.name === "Ministry of Magic Exploration"),
+          attractions.find(a => a.name === "Epic Universe Dining"),
+          !avoidText.includes("dark universe") ? attractions.find(a => a.name === "Dark Universe Attraction") : attractions.find(a => a.name === "How to Train Your Dragon"),
+          attractions.find(a => a.name === "How to Train Your Dragon"),
+          attractions.find(a => a.name === "Epic Universe Dining")
+        ];
+      } else {
+        // Mixed day with USF
+        suggested.saturday = [
+          attractions.find(a => a.name === "E.T. Adventure"),
+          attractions.find(a => a.name === "Revenge of the Mummy"),
+          attractions.find(a => a.name === "Today Cafe"),
+          attractions.find(a => a.name === "Transformers"),
+          !avoidText.includes("rip ride rockit") && avgComfort >= 3.5 ? attractions.find(a => a.name === "Rip Ride Rockit") : attractions.find(a => a.name === "Minions Mayhem"),
+          attractions.find(a => a.name === "Fast Food Boulevard"),
+          attractions.find(a => a.name === "The Simpsons Ride"),
+          attractions.find(a => a.name === "Lard Lad Donuts"),
+          attractions.find(a => a.name === "Men in Black")
+        ];
+      }
+
+      // Place attractions into timeslots
+      ['thursday', 'friday', 'saturday'].forEach(day => {
+        const daySlots = document.querySelectorAll(`.timeslot[data-day="${day}"]`);
+        const dayAttractions = suggested[day].filter(a => a != null);
+        
+        dayAttractions.forEach((attr, idx) => {
+          if (idx < daySlots.length && attr) {
+            const slot = daySlots[idx];
+            const itemsContainer = slot.querySelector('.timeslot-items');
+            const scheduledItem = document.createElement('div');
+            scheduledItem.className = 'scheduled-item';
+            scheduledItem.innerHTML = `
+              <span>${attr.category} <strong>${attr.name}</strong> (${attr.park})</span>
+              <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+            itemsContainer.appendChild(scheduledItem);
+          }
+        });
+      });
+
+      alert('✨ Suggested itinerary generated based on survey responses! Feel free to drag & drop to customize.');
     }
 
     function setupDataExport(subs) {
