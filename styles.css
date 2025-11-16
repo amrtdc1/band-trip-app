@@ -305,6 +305,12 @@ label {
   color: var(--label-color);
 }
 
+label.required::after {
+  content: ' *';
+  color: #ef4444;
+  font-weight: 700;
+}
+
 label span.required {
   color: var(--color-accent);
 }
