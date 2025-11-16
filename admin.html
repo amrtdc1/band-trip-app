@@ -280,10 +280,27 @@
     .chaperone-item .delete-btn:hover {
       opacity: 0.9;
     }
+    .admin-link {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    .admin-link:hover {
+      opacity: 1;
+      background: var(--color-surface);
+    }
   </style>
 </head>
 <body>
   <div class="app-shell">
+    <a href="index.html" class="admin-link" title="Student Form">← Form</a>
     <header class="app-header">
       <div class="app-title-row">
         <div class="app-title">

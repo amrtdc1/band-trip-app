@@ -230,6 +230,24 @@ html.theme-dark body {
   color: var(--color-text-muted);
 }
 
+.admin-link {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.admin-link:hover {
+  opacity: 1;
+  background: var(--color-surface);
+}
+
 /* Cards */
 
 .card {
