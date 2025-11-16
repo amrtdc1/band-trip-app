@@ -335,8 +335,30 @@ select:focus,
 textarea:focus {
   border-color: var(--color-accent-600);
   box-shadow: 0 6px 18px rgba(37,99,235,0.08);
-  background: #fff;
+  background: var(--color-surface);
   transform: none; /* avoid layout shift on focus for mobile */
+}
+
+/* Dark theme input overrides for better visibility */
+html.theme-dark input,
+html.theme-dark select,
+html.theme-dark textarea {
+  background: rgba(15,23,42,0.6);
+  color: #e6eef6;
+  border-color: rgba(255,255,255,0.12);
+}
+
+html.theme-dark input:focus,
+html.theme-dark select:focus,
+html.theme-dark textarea:focus {
+  background: rgba(15,23,42,0.8);
+  color: #e6eef6;
+  border-color: var(--color-accent-600);
+}
+
+html.theme-dark input::placeholder,
+html.theme-dark textarea::placeholder {
+  color: rgba(159,176,200,0.5);
 }
 
 textarea {
@@ -549,10 +571,10 @@ html.theme-universal {
   --pill-muted-bg: rgba(245,158,11,0.1);
 }
 
-/* Optional: Add a background image for universal theme (customize the URL) */
+/* Universal theme background image */
 html.theme-universal body {
   background: 
-    linear-gradient(180deg, rgba(247,250,252,0.85) 0%, rgba(255,255,255,0.80) 100%),
-    url('./wp8944554.jpg') center/cover no-repeat fixed;
+    linear-gradient(180deg, rgba(247,250,252,0.88) 0%, rgba(255,255,255,0.82) 100%),
+    url('wp8944554.jpg') center/cover no-repeat fixed;
 }
 
