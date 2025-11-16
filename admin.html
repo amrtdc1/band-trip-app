@@ -4,7 +4,207 @@
   <meta charset="utf-8" />
   <title>Admin – Universal Analytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
   <link href="./styles.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--color-border-subtle);
+    }
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .chart-container {
+      background: var(--color-card);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-border-subtle);
+      box-shadow: var(--shadow-soft);
+    }
+    .chart-container h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      color: var(--color-text);
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 280px;
+    }
+    
+    /* Itinerary Builder Styles */
+    .itinerary-builder {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .itinerary-builder {
+        grid-template-columns: 1fr;
+      }
+      .attractions-library {
+        max-height: 300px;
+      }
+    }
+    .attractions-library {
+      background: var(--color-card);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-border-subtle);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .attractions-library h4 {
+      margin-top: 0;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .attraction-card {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      padding: 0.6rem;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      cursor: grab;
+      font-size: 0.85rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .attraction-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .attraction-card.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+    .attraction-card .attraction-name {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .attraction-card .attraction-park {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+    }
+    
+    .schedule-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .day-schedule {
+      background: var(--color-card);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .day-schedule h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--color-accent);
+    }
+    .timeslots {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .timeslot {
+      background: var(--color-surface);
+      border: 2px dashed var(--color-border-subtle);
+      border-radius: 8px;
+      padding: 0.75rem;
+      min-height: 80px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .timeslot.drag-over {
+      background: var(--color-accent-soft);
+      border-color: var(--color-accent);
+    }
+    .timeslot-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .timeslot-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .scheduled-item {
+      background: var(--color-accent-soft);
+      border: 1px solid var(--color-accent);
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .scheduled-item .remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-danger);
+      cursor: pointer;
+      padding: 0;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--color-card);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-border-subtle);
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -12,56 +212,97 @@
       <div class="app-title-row">
         <div class="app-title">
           <span class="icon">🎛️</span>
-          <span>Universal Trip – Admin</span>
+          <span class="universal-title">Universal Trip – Admin</span>
         </div>
-        <div class="theme-toggle" aria-hidden="false">
-          <input id="theme-toggle" type="checkbox" aria-label="Toggle theme" />
-          <label class="switch" for="theme-toggle" title="Toggle theme"></label>
+        <div class="theme-selector">
+          <button id="theme-selector" aria-label="Theme selector" title="Change theme">
+            <span class="icon">☀️</span><span class="label">Light</span>
+          </button>
         </div>
         <span class="app-badge">Director View</span>
       </div>
       <p class="app-subtitle">
-        Live analytics and recommended itinerary based on student submissions.
+        Live analytics, charts, and itinerary builder based on student submissions.
       </p>
     </header>
 
-  <div id="gate" class="card">
-    <p>Sign in with your Google account to view analytics & itinerary.</p>
-    <button id="login">Sign in with Google</button>
-    <div id="who" class="muted"></div>
-  </div>
+    <div id="gate" class="card">
+      <p>Sign in with your Google account to view analytics & itinerary.</p>
+      <button type="button" id="login">Sign in with Google</button>
+      <div id="who" class="muted"></div>
+    </div>
 
-  <div id="app" style="display:none;">
-    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <p id="currentUser" style="margin: 0;"></p>
+    <div id="app" style="display:none;">
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p id="currentUser" style="margin: 0;"></p>
+        </div>
+        <button type="button" id="logout" style="padding: 8px 16px;">Sign out</button>
       </div>
-      <button id="logout" style="padding: 8px 16px;">Sign out</button>
-    </div>
 
-    <div class="card">
-      <h2>Group Snapshot</h2>
-      <div id="summary"></div>
-    </div>
+      <div class="tabs">
+        <button type="button" class="tab active" data-tab="analytics">📊 Analytics</button>
+        <button type="button" class="tab" data-tab="itinerary">📅 Itinerary Builder</button>
+        <button type="button" class="tab" data-tab="data">💾 Data Export</button>
+      </div>
 
-    <div class="card">
-      <h2>Preferences</h2>
-      <h3>Coaster Comfort</h3>
-      <div id="comfort"></div>
-      <h3>Top Themes</h3>
-      <div id="themes"></div>
-      <h3>Common Avoids</h3>
-      <div id="avoids"></div>
-    </div>
+      <!-- Analytics Tab -->
+      <div id="analytics" class="tab-content active">
+        <div class="stats-row" id="statsRow"></div>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3>Coaster Comfort Level</h3>
+            <div class="chart-wrapper">
+              <canvas id="comfortChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-container">
+            <h3>Thrill vs Cautious Breakdown</h3>
+            <div class="chart-wrapper">
+              <canvas id="thrillChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-container">
+            <h3>Top Themes Requested</h3>
+            <div class="chart-wrapper">
+              <canvas id="themesChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-container">
+            <h3>Common Concerns/Avoids</h3>
+            <div class="chart-wrapper">
+              <canvas id="avoidsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="card">
-      <h2>Recommended Itinerary</h2>
-      <pre id="itinerary"></pre>
-    </div>
+      <!-- Itinerary Builder Tab -->
+      <div id="itinerary" class="tab-content">
+        <div class="card">
+          <h2>Drag & Drop Itinerary Builder</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            Drag attractions from the library into time slots. Remove items by clicking the × button.
+          </p>
+          <div class="itinerary-builder">
+            <div class="attractions-library" id="attractionsLibrary">
+              <h4>🎢 Attractions Library</h4>
+              <div id="attractionsList"></div>
+            </div>
+            <div class="schedule-grid" id="scheduleGrid"></div>
+          </div>
+        </div>
+      </div>
 
-    <div class="card">
-      <button id="download">Download JSON</button>
-      <span id="status"></span>
+      <!-- Data Export Tab -->
+      <div id="data" class="tab-content">
+        <div class="card">
+          <h2>Data Export & Summary</h2>
+          <div id="summary"></div>
+          <button type="button" id="download" style="margin-top: 1rem;">Download JSON</button>
+          <span id="status" style="margin-left: 1rem; color: var(--color-text-muted);"></span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -71,123 +312,70 @@
     import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const db = getFirestore(app);
-    const loginBtn = document.getElementById('login');
-    const logoutBtn = document.getElementById('logout');
-    const who = document.getElementById('who');
-    const currentUser = document.getElementById('currentUser');
-    const appDiv = document.getElementById('app');
-    const gate = document.getElementById('gate');
+    let charts = {};
+    let submissionsData = null;
 
-    loginBtn.addEventListener('click', signInAdminWithGoogle);
-    logoutBtn.addEventListener('click', () => {
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Auth
+    document.getElementById('login').addEventListener('click', signInAdminWithGoogle);
+    document.getElementById('logout').addEventListener('click', () => {
       signOut(auth).then(() => {
-        console.log('Signed out successfully');
-        gate.style.display = 'block';
-        appDiv.style.display = 'none';
-        who.textContent = '';
-        currentUser.textContent = '';
-      }).catch(err => {
-        console.error('Error signing out:', err);
+        document.getElementById('gate').style.display = 'block';
+        document.getElementById('app').style.display = 'none';
       });
     });
 
     onAuth(async (user) => {
       if (!user) return;
-      who.textContent = user.email || "(signed in)";
-
-      // Check custom admin claim set via Firebase Admin SDK
       try {
         const idTokenResult = await user.getIdTokenResult(true);
-        const isAdmin = !!idTokenResult.claims.admin;
-
-        if (!isAdmin) {
-          who.textContent = `Access denied for ${user.email || 'unknown user'} (not an admin)`;
+        if (!idTokenResult.claims.admin) {
+          document.getElementById('who').textContent = `Access denied for ${user.email}`;
           return;
         }
-
-        gate.style.display = 'none';
-        appDiv.style.display = 'block';
-        currentUser.textContent = `Logged in as: ${user.email}`;
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('currentUser').textContent = `Logged in as: ${user.email}`;
         await loadAndRender();
       } catch (err) {
-        console.error('Error checking admin claim:', err);
-        who.textContent = 'Error verifying admin status';
+        document.getElementById('who').textContent = 'Error verifying admin status';
       }
     });
 
     async function loadAndRender() {
-      const status = document.getElementById('status');
-
-      // OPTION A: read precomputed analytics doc (if you deploy the Cloud Function)
-      const analyticsDoc = await getDoc(doc(db, 'admin', 'analytics'));
-      if (analyticsDoc.exists()) {
-        const a = analyticsDoc.data();
-        renderFromAnalytics(a);
-        status.textContent = "Loaded admin analytics.";
-        return;
-      }
-
-      // OPTION B: fallback – compute in the browser from raw submissions (rules must allow admin read)
       const snap = await getDocs(query(collection(db, 'submissions'), orderBy('timestamp', 'asc')));
-      const subs = snap.docs.map(d => d.data());
-      renderFromSubs(subs);
-      status.textContent = `Loaded ${subs.length} submissions (client-side analytics).`;
+      submissionsData = snap.docs.map(d => d.data());
+      renderAnalytics(submissionsData);
+      initializeItineraryBuilder();
+      setupDataExport(submissionsData);
     }
 
-    function renderFromAnalytics(a) {
-      // a.totals, a.themeCounts, a.avoidCounts, a.thrillBreakdown
-      const total = a.totals?.count || 0;
-      const buckets = a.thrillBreakdown || {thrill:0, flexible:0, cautious:0};
-      const pct = n => total ? Math.round((n/total)*100) + "%" : "0%";
-
-      document.getElementById('summary').innerHTML = `
-        <div>Total submissions: <b>${total}</b></div>
-        <div>Thrill: <b>${buckets.thrill}</b> (${pct(buckets.thrill)}),
-             Flexible: <b>${buckets.flexible}</b> (${pct(buckets.flexible)}),
-             Cautious: <b>${buckets.cautious}</b> (${pct(buckets.cautious)})</div>
-      `;
-
-      // Present small summaries
-      const comfort = a.comfortCounts || {1:0,2:0,3:0,4:0,5:0};
-      document.getElementById('comfort').innerHTML =
-        Object.entries(comfort).map(([k,v])=> v? `<span class="pill">${k}: ${v} (${pct(v)})</span>`:"").join("") || "—";
-
-      document.getElementById('themes').innerHTML =
-        topN(a.themeCounts, 10, total);
-
-      document.getElementById('avoids').innerHTML =
-        topN(a.avoidCounts, 20, total, false);
-
-      document.getElementById('itinerary').textContent =
-        buildItinerary(total, buckets, a.themeCounts || {}, a.avoidCounts || {});
-
-      // download button uses a.sanitizedSubmissions if you store it; else skip
-      document.getElementById('download').onclick = () => {
-        const blob = new Blob([JSON.stringify(a.rawSample || {}, null, 2)], {type:'application/json'});
-        const aTag = document.createElement('a');
-        aTag.href = URL.createObjectURL(blob);
-        aTag.download = 'universal_band_trip_responses.json';
-        aTag.click();
-        URL.revokeObjectURL(aTag.href);
-      };
-    }
-
-    function renderFromSubs(subs) {
+    function renderAnalytics(subs) {
       const total = subs.length;
       const comfortCounts = {1:0,2:0,3:0,4:0,5:0};
       const themes = {};
       const avoidCounts = {};
-      const buckets = { thrill:0, flexible:0, cautious:0 };
+      const buckets = {thrill:0, flexible:0, cautious:0};
 
       subs.forEach(s => {
         const c = Number(s.coaster_comfort||0);
-        if (comfortCounts[c]!=null) comfortCounts[c]++;
-        if (c>=4) buckets.thrill++; else if (c===3) buckets.flexible++; else if (c>0) buckets.cautious++;
+        if (comfortCounts[c] != null) comfortCounts[c]++;
+        if (c >= 4) buckets.thrill++;
+        else if (c === 3) buckets.flexible++;
+        else if (c > 0) buckets.cautious++;
 
         (s.top_themes||[]).forEach(t => {
           const k = t.trim().toLowerCase();
-          if (!k) return;
-          themes[k] = (themes[k]||0)+1;
+          if (k) themes[k] = (themes[k]||0) + 1;
         });
 
         const avoidText = [
@@ -195,27 +383,227 @@
           s.usf_choices||"", s.ioa_choices||"", s.epic_choices||"", s.parent_restrictions||""
         ].join(" ").toLowerCase();
 
-        ["velocicoaster","hulk","rip ride rockit","hagrid","dark universe","scary",
-         "heights","motion sickness","simulator","big drops","inversion"]
-         .forEach(k => { if (avoidText.includes(k)) avoidCounts[k]=(avoidCounts[k]||0)+1; });
+        ["velocicoaster","hulk","rip ride rockit","hagrid","dark universe","scary","heights","motion sickness","simulator"].forEach(k => {
+          if (avoidText.includes(k)) avoidCounts[k] = (avoidCounts[k]||0) + 1;
+        });
       });
 
-      const pct = n => total? Math.round((n/total)*100) + "%":"0%";
-      document.getElementById('summary').innerHTML = `
-        <div>Total submissions: <b>${total}</b></div>
-        <div>Thrill: <b>${buckets.thrill}</b> (${pct(buckets.thrill)}),
-             Flexible: <b>${buckets.flexible}</b> (${pct(buckets.flexible)}),
-             Cautious: <b>${buckets.cautious}</b> (${pct(buckets.cautious)})</div>
+      // Stats cards
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${total}</div>
+          <div class="stat-label">Total Submissions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${buckets.thrill}</div>
+          <div class="stat-label">Thrill Seekers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${buckets.flexible}</div>
+          <div class="stat-label">Flexible</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${buckets.cautious}</div>
+          <div class="stat-label">Cautious</div>
+        </div>
       `;
 
-      document.getElementById('comfort').innerHTML =
-        Object.entries(comfortCounts).map(([k,v])=> v? `<span class="pill">${k}: ${v} (${pct(v)})</span>`:"").join("") || "—";
+      // Coaster Comfort Chart (Bar)
+      if (charts.comfort) charts.comfort.destroy();
+      charts.comfort = new Chart(document.getElementById('comfortChart'), {
+        type: 'bar',
+        data: {
+          labels: ['1 (No way)', '2', '3 (Okay)', '4', '5 (Love)'],
+          datasets: [{
+            label: 'Students',
+            data: [comfortCounts[1], comfortCounts[2], comfortCounts[3], comfortCounts[4], comfortCounts[5]],
+            backgroundColor: ['#ef4444', '#fb923c', '#fbbf24', '#4ade80', '#22c55e']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
 
-      document.getElementById('themes').innerHTML = topN(themes, 10, total);
-      document.getElementById('avoids').innerHTML = topN(avoidCounts, 20, total, false);
+      // Thrill Breakdown (Doughnut)
+      if (charts.thrill) charts.thrill.destroy();
+      charts.thrill = new Chart(document.getElementById('thrillChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Thrill', 'Flexible', 'Cautious'],
+          datasets: [{
+            data: [buckets.thrill, buckets.flexible, buckets.cautious],
+            backgroundColor: ['#22c55e', '#fbbf24', '#ef4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
 
-      document.getElementById('itinerary').textContent =
-        buildItinerary(total, buckets, themes, avoidCounts);
+      // Top Themes (Horizontal Bar)
+      const topThemes = Object.entries(themes).sort((a,b) => b[1] - a[1]).slice(0, 8);
+      if (charts.themes) charts.themes.destroy();
+      charts.themes = new Chart(document.getElementById('themesChart'), {
+        type: 'bar',
+        data: {
+          labels: topThemes.map(([k]) => k),
+          datasets: [{
+            label: 'Requests',
+            data: topThemes.map(([,v]) => v),
+            backgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // Avoids (Bar)
+      const topAvoids = Object.entries(avoidCounts).sort((a,b) => b[1] - a[1]).slice(0, 8);
+      if (charts.avoids) charts.avoids.destroy();
+      charts.avoids = new Chart(document.getElementById('avoidsChart'), {
+        type: 'bar',
+        data: {
+          labels: topAvoids.map(([k]) => k),
+          datasets: [{
+            label: 'Students',
+            data: topAvoids.map(([,v]) => v),
+            backgroundColor: '#dc2626'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function initializeItineraryBuilder() {
+      const attractions = [
+        {name: "Hagrid's Magical Creatures", park: "IOA"},
+        {name: "VelociCoaster", park: "IOA"},
+        {name: "Hulk", park: "IOA"},
+        {name: "Harry Potter - Forbidden Journey", park: "IOA"},
+        {name: "Spider-Man", park: "IOA"},
+        {name: "Seuss Landing", park: "IOA"},
+        {name: "Rip Ride Rockit", park: "USF"},
+        {name: "Mummy", park: "USF"},
+        {name: "Gringotts", park: "USF"},
+        {name: "Minions", park: "USF"},
+        {name: "Transformers", park: "USF"},
+        {name: "Super Nintendo World", park: "Epic"},
+        {name: "Ministry of Magic", park: "Epic"},
+        {name: "Dark Universe", park: "Epic"},
+        {name: "How to Train Your Dragon", park: "Epic"}
+      ];
+
+      const schedule = {
+        thursday: ["2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"],
+        friday: ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"],
+        saturday: ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
+      };
+
+      // Render attractions library
+      const attractionsList = document.getElementById('attractionsList');
+      attractions.forEach(attr => {
+        const card = document.createElement('div');
+        card.className = 'attraction-card';
+        card.draggable = true;
+        card.dataset.attraction = JSON.stringify(attr);
+        card.innerHTML = `
+          <div class="attraction-name">${attr.name}</div>
+          <div class="attraction-park">${attr.park}</div>
+        `;
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        attractionsList.appendChild(card);
+      });
+
+      // Render schedule grid
+      const scheduleGrid = document.getElementById('scheduleGrid');
+      ['thursday', 'friday', 'saturday'].forEach(day => {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-schedule';
+        dayCard.innerHTML = `<h3>${day.charAt(0).toUpperCase() + day.slice(1)}</h3><div class="timeslots" id="${day}-slots"></div>`;
+        scheduleGrid.appendChild(dayCard);
+
+        const slotsContainer = document.getElementById(`${day}-slots`);
+        schedule[day].forEach(time => {
+          const slot = document.createElement('div');
+          slot.className = 'timeslot';
+          slot.dataset.day = day;
+          slot.dataset.time = time;
+          slot.innerHTML = `
+            <div class="timeslot-header">${time}</div>
+            <div class="timeslot-items"></div>
+          `;
+          slot.addEventListener('dragover', handleDragOver);
+          slot.addEventListener('dragleave', handleDragLeave);
+          slot.addEventListener('drop', handleDrop);
+          slotsContainer.appendChild(slot);
+        });
+      });
+    }
+
+    let draggedElement = null;
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      this.classList.add('drag-over');
+      return false;
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) e.stopPropagation();
+      this.classList.remove('drag-over');
+
+      if (draggedElement) {
+        const data = JSON.parse(draggedElement.dataset.attraction);
+        const itemsContainer = this.querySelector('.timeslot-items');
+        
+        const scheduledItem = document.createElement('div');
+        scheduledItem.className = 'scheduled-item';
+        scheduledItem.innerHTML = `
+          <span><strong>${data.name}</strong> (${data.park})</span>
+          <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+        `;
+        itemsContainer.appendChild(scheduledItem);
+      }
+
+      return false;
+    }
+
+    function setupDataExport(subs) {
+      const total = subs.length;
+      document.getElementById('summary').innerHTML = `
+        <p><strong>Total Submissions:</strong> ${total}</p>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem;">Click the button below to download all submission data as JSON.</p>
+      `;
 
       document.getElementById('download').onclick = () => {
         const blob = new Blob([JSON.stringify({ submissions: subs }, null, 2)], {type:'application/json'});
@@ -224,59 +612,36 @@
         a.download = 'universal_band_trip_responses.json';
         a.click();
         URL.revokeObjectURL(a.href);
+        document.getElementById('status').textContent = 'Downloaded!';
+        setTimeout(() => document.getElementById('status').textContent = '', 3000);
       };
-    }
-
-    function topN(map, n, total, showPct = true) {
-      const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);
-      if (!sorted.length) return "—";
-      const pct = c => total? Math.round((c/total)*100)+"%" : "0%";
-      return sorted.map(([k,c]) => `<span class="pill">${k}${showPct?` (${pct(c)})`:`: ${c}`}</span>`).join("");
-    }
-
-    function buildItinerary(total, buckets, themes, avoid) {
-      const t = n => total? (n/total):0;
-      const want = k => (themes[k]||0);
-      const manyThrill = t(buckets.thrill) >= 0.4;
-      const manyCaut  = t(buckets.cautious) >= 0.25;
-      const hp   = want("harry potter") >= total*0.3;
-      const nint = want("nintendo") >= total*0.2 || want("super nintendo world") >= total*0.2;
-      const bigC = want("big coasters") >= total*0.25;
-      const hatesDark = (avoid["dark universe"]||0) >= total*0.2 || (avoid["scary"]||0) >= total*0.2;
-
-      let out = "";
-      out += "THU (Arrival – Afternoon):\n";
-      out += (manyThrill || hp)
-        ? "- Start at Islands of Adventure. Prioritize Hogsmeade/Hagrid's; thrill block: Hulk/VelociCoaster.\n"
-        : "- Start at Universal Studios Florida: Minions, shows, Diagon Alley walk-through.\n";
-      if (manyCaut) out += "- Parallel gentle track (Seuss / milder attractions) during thrill block.\n";
-      out += "\nFRI (Full Day – Studios + Islands):\n";
-      out += "- Rope drop highest-interest headliners; schedule a clear thrill block (Hagrid's, VelociCoaster, Hulk, Mummy).\n";
-      if (manyCaut) out += "- Provide calm track each time (Minions/Seuss/Potter without the top coasters).\n";
-      out += "- Midday indoor shows; evening hop to clean up remaining must-dos.\n\n";
-      out += "SAT (Epic Universe):\n";
-      out += nint ? "- Rope drop Super Nintendo World.\n"
-           : hp   ? "- Prioritize Ministry of Magic early.\n"
-                  : "- Start at Celestial Park, then move to the most-requested land.\n";
-      out += hatesDark
-        ? "- Make Dark Universe optional only; default to Nintendo/Dragons/Ministry.\n"
-        : "- Offer Dark Universe as an optional thrill/horror block.\n";
-      out += "- Afternoon: Isle of Berk; Evening: repeats + calm closer + group photo.\n";
-      return out;
     }
   </script>
   <script>
     (function(){
-      const toggle = document.getElementById('theme-toggle');
+      const btn = document.getElementById('theme-selector');
       const root = document.documentElement;
+      const themes = ['light','dark','universal'];
+      const icons = { light: '☀️', dark: '🌙', universal: '🌐' };
+      const labels = { light: 'Light', dark: 'Dark', universal: 'Universal' };
+      function applyTheme(t){
+        root.classList.remove('theme-dark','theme-universal');
+        if (t === 'dark') root.classList.add('theme-dark');
+        if (t === 'universal') root.classList.add('theme-universal');
+        localStorage.setItem('theme', t);
+        if (!btn) return;
+        btn.querySelector('.icon').textContent = icons[t] || '';
+        btn.querySelector('.label').textContent = labels[t] || t;
+      }
       const stored = localStorage.getItem('theme');
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const startDark = stored ? stored === 'dark' : prefersDark;
-      if (startDark) { root.classList.add('theme-dark'); if (toggle) toggle.checked = true; }
-      if (toggle) {
-        toggle.addEventListener('change', () => {
-          if (toggle.checked) { root.classList.add('theme-dark'); localStorage.setItem('theme','dark'); }
-          else { root.classList.remove('theme-dark'); localStorage.setItem('theme','light'); }
+      const start = stored || (prefersDark ? 'dark' : 'light');
+      applyTheme(start);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const cur = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+          const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+          applyTheme(next);
         });
       }
     })();
