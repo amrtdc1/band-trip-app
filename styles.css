@@ -351,9 +351,10 @@ html.theme-dark textarea {
 html.theme-dark input:focus,
 html.theme-dark select:focus,
 html.theme-dark textarea:focus {
-  background: rgba(15,23,42,0.8);
-  color: #e6eef6;
+  background: rgba(15,23,42,0.8) !important;
+  color: #ffffff !important;
   border-color: var(--color-accent-600);
+  box-shadow: 0 0 0 2px rgba(125,211,252,0.2);
 }
 
 html.theme-dark input::placeholder,
