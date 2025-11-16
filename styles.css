@@ -335,26 +335,26 @@ select:focus,
 textarea:focus {
   border-color: var(--color-accent-600);
   box-shadow: 0 6px 18px rgba(37,99,235,0.08);
-  background: var(--color-surface);
+  background: #fff;
   transform: none; /* avoid layout shift on focus for mobile */
 }
 
-/* Dark theme input overrides for better visibility */
+/* Dark theme input overrides for better visibility - MUST come after base focus styles */
 html.theme-dark input,
 html.theme-dark select,
 html.theme-dark textarea {
-  background: rgba(15,23,42,0.6);
-  color: #e6eef6;
+  background: rgba(15,23,42,0.7) !important;
+  color: #e6eef6 !important;
   border-color: rgba(255,255,255,0.12);
 }
 
 html.theme-dark input:focus,
 html.theme-dark select:focus,
 html.theme-dark textarea:focus {
-  background: rgba(15,23,42,0.8) !important;
+  background: rgba(20,30,50,0.9) !important;
   color: #ffffff !important;
-  border-color: var(--color-accent-600);
-  box-shadow: 0 0 0 2px rgba(125,211,252,0.2);
+  border-color: var(--color-accent-600) !important;
+  box-shadow: 0 0 0 3px rgba(125,211,252,0.25) !important;
 }
 
 html.theme-dark input::placeholder,
