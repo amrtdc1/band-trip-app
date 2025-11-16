@@ -204,6 +204,81 @@
       color: var(--color-text-muted);
       margin-top: 0.5rem;
     }
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .filter-chip {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--color-border-subtle);
+      background: var(--color-surface);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .filter-chip:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+    }
+    .filter-chip.active {
+      background: var(--color-accent);
+      color: white;
+      border-color: var(--color-accent);
+    }
+    .chaperone-selector {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--color-surface);
+      border-radius: 8px;
+      border: 1px solid var(--color-border-subtle);
+    }
+    .chaperone-selector label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--color-text);
+    }
+    .chaperone-selector select {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 8px;
+      background: var(--color-card);
+      color: var(--color-text);
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .chaperone-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 8px;
+    }
+    .chaperone-item .name {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .chaperone-item .delete-btn {
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+    .chaperone-item .delete-btn:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -243,11 +318,18 @@
       <div class="tabs">
         <button type="button" class="tab active" data-tab="analytics">📊 Analytics</button>
         <button type="button" class="tab" data-tab="itinerary">📅 Itinerary Builder</button>
+        <button type="button" class="tab" data-tab="chaperones">👥 Chaperones</button>
         <button type="button" class="tab" data-tab="data">💾 Data Export</button>
       </div>
 
       <!-- Analytics Tab -->
       <div id="analytics" class="tab-content active">
+        <div class="chaperone-selector">
+          <label for="chaperoneFilter">🎯 Filter by Chaperone Group</label>
+          <select id="chaperoneFilter">
+            <option value="all">All Students (Full Group)</option>
+          </select>
+        </div>
         <div class="stats-row" id="statsRow"></div>
         <div class="charts-grid">
           <div class="chart-container">
@@ -293,13 +375,26 @@
             </button>
           </div>
           <div style="background: var(--color-surface); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--color-border-subtle);">
-            <h4 style="margin-top: 0; font-size: 0.9rem;">📖 Category Legend</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.85rem;">
-              <div><strong>🎢</strong> Thrill Rides (Major Coasters)</div>
-              <div><strong>🎡</strong> Family Rides (Minor/Dark Rides)</div>
-              <div><strong>🎭</strong> Shows & Entertainment</div>
-              <div><strong>🍔</strong> Dining & Food</div>
-              <div><strong>🎪</strong> Interactive Experiences</div>
+            <h4 style="margin-top: 0; font-size: 0.9rem; margin-bottom: 0.75rem;">🔍 Filter Attractions</h4>
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">By Category:</label>
+              <div class="filter-group" id="categoryFilters">
+                <button type="button" class="filter-chip active" data-category="all">All</button>
+                <button type="button" class="filter-chip" data-category="🎢">🎢 Thrill Rides</button>
+                <button type="button" class="filter-chip" data-category="🎡">🎡 Family Rides</button>
+                <button type="button" class="filter-chip" data-category="🎭">🎭 Shows</button>
+                <button type="button" class="filter-chip" data-category="🍔">🍔 Dining</button>
+                <button type="button" class="filter-chip" data-category="🎪">🎪 Interactive</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">By Park:</label>
+              <div class="filter-group" id="parkFilters">
+                <button type="button" class="filter-chip active" data-park="all">All Parks</button>
+                <button type="button" class="filter-chip" data-park="IOA">IOA</button>
+                <button type="button" class="filter-chip" data-park="USF">USF</button>
+                <button type="button" class="filter-chip" data-park="Epic">Epic Universe</button>
+              </div>
             </div>
           </div>
           <div class="itinerary-builder">
@@ -308,6 +403,29 @@
               <div id="attractionsList"></div>
             </div>
             <div class="schedule-grid" id="scheduleGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chaperones Management Tab -->
+      <div id="chaperones" class="tab-content">
+        <div class="card">
+          <h2>👥 Manage Chaperone List</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+            Add or remove chaperones. Changes will immediately update the student form dropdown.
+          </p>
+          
+          <div style="display: flex; gap: 1rem; margin-bottom: 2rem; align-items: flex-start;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Add New Chaperone</label>
+              <input type="text" id="newChaperoneName" placeholder="e.g., Mrs. Anderson" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-subtle); border-radius: 8px; font-size: 1rem;" />
+            </div>
+            <button type="button" id="addChaperoneBtn" style="margin-top: 1.85rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">➕ Add</button>
+          </div>
+          
+          <div>
+            <h3 style="margin-bottom: 1rem;">Current Chaperones</h3>
+            <div id="chaperonesList" style="display: grid; gap: 0.75rem;"></div>
           </div>
         </div>
       </div>
@@ -327,11 +445,17 @@
   <script type="module">
     import { app, auth, onAuth, signInAdminWithGoogle } from './firebase-init.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const db = getFirestore(app);
     let charts = {};
     let submissionsData = null;
+    let allAttractions = [];
+    let activeFilters = {
+      category: 'all',
+      park: 'all',
+      chaperone: 'all'
+    };
 
     // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
@@ -372,9 +496,109 @@
     async function loadAndRender() {
       const snap = await getDocs(query(collection(db, 'submissions'), orderBy('timestamp', 'asc')));
       submissionsData = snap.docs.map(d => d.data());
+      
+      // Populate chaperone dropdown
+      const chaperones = [...new Set(submissionsData.map(s => s.chaperone).filter(c => c))].sort();
+      const chaperoneSelect = document.getElementById('chaperoneFilter');
+      chaperones.forEach(chap => {
+        const option = document.createElement('option');
+        option.value = chap;
+        option.textContent = chap;
+        chaperoneSelect.appendChild(option);
+      });
+      
+      // Chaperone filter change handler
+      chaperoneSelect.addEventListener('change', (e) => {
+        activeFilters.chaperone = e.target.value;
+        const filteredSubs = getFilteredSubmissions();
+        renderAnalytics(filteredSubs);
+      });
+      
       renderAnalytics(submissionsData);
       initializeItineraryBuilder();
       setupDataExport(submissionsData);
+      loadChaperones();
+    }
+    
+    async function loadChaperones() {
+      const chapsSnap = await getDocs(collection(db, 'chaperones'));
+      const chaperones = chapsSnap.docs.map(d => ({ id: d.id, name: d.data().name })).sort((a, b) => a.name.localeCompare(b.name));
+      
+      // Render chaperone list in management tab
+      const chaperonesList = document.getElementById('chaperonesList');
+      chaperonesList.innerHTML = '';
+      
+      if (chaperones.length === 0) {
+        chaperonesList.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: 2rem;">No chaperones added yet.</p>';
+      } else {
+        chaperones.forEach(chap => {
+          const item = document.createElement('div');
+          item.className = 'chaperone-item';
+          item.innerHTML = `
+            <span class="name">${chap.name}</span>
+            <button type="button" class="delete-btn" data-id="${chap.id}">🗑️ Remove</button>
+          `;
+          item.querySelector('.delete-btn').addEventListener('click', async (e) => {
+            if (confirm(`Remove ${chap.name} from the chaperone list?`)) {
+              await deleteDoc(doc(db, 'chaperones', chap.id));
+              loadChaperones();
+            }
+          });
+          chaperonesList.appendChild(item);
+        });
+      }
+      
+      // Update chaperone filter dropdown
+      const chaperoneSelect = document.getElementById('chaperoneFilter');
+      const currentValue = chaperoneSelect.value;
+      chaperoneSelect.innerHTML = '<option value="all">All Students (Full Group)</option>';
+      chaperones.forEach(chap => {
+        const option = document.createElement('option');
+        option.value = chap.name;
+        option.textContent = chap.name;
+        chaperoneSelect.appendChild(option);
+      });
+      chaperoneSelect.value = currentValue;
+    }
+    
+    // Add chaperone button handler
+    document.getElementById('addChaperoneBtn').addEventListener('click', async () => {
+      const input = document.getElementById('newChaperoneName');
+      const name = input.value.trim();
+      
+      if (!name) {
+        alert('Please enter a chaperone name.');
+        return;
+      }
+      
+      // Check for duplicates
+      const existing = await getDocs(query(collection(db, 'chaperones')));
+      const duplicate = existing.docs.find(d => d.data().name.toLowerCase() === name.toLowerCase());
+      
+      if (duplicate) {
+        alert('This chaperone already exists in the list.');
+        return;
+      }
+      
+      // Add to Firestore
+      await setDoc(doc(collection(db, 'chaperones')), { name });
+      input.value = '';
+      loadChaperones();
+      alert(`✅ ${name} added successfully!`);
+    });
+    
+    // Allow Enter key to add chaperone
+    document.getElementById('newChaperoneName').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('addChaperoneBtn').click();
+      }
+    });
+    
+    function getFilteredSubmissions() {
+      if (activeFilters.chaperone === 'all') {
+        return submissionsData;
+      }
+      return submissionsData.filter(s => s.chaperone === activeFilters.chaperone);
     }
 
     function renderAnalytics(subs) {
@@ -602,29 +826,72 @@
         saturday: ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
       };
 
-      // Render attractions library
-      const attractionsList = document.getElementById('attractionsList');
-      attractions.forEach(attr => {
-        const card = document.createElement('div');
-        card.className = 'attraction-card';
-        card.draggable = true;
-        card.dataset.attraction = JSON.stringify(attr);
-        card.innerHTML = `
-          <div class="attraction-name">${attr.category} ${attr.name}</div>
-          <div class="attraction-park">${attr.park} • ${attr.type}</div>
-        `;
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-        attractionsList.appendChild(card);
+      // Store attractions globally
+      allAttractions = attractions;
+      
+      // Setup filter event listeners
+      document.querySelectorAll('#categoryFilters .filter-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          document.querySelectorAll('#categoryFilters .filter-chip').forEach(c => c.classList.remove('active'));
+          e.target.classList.add('active');
+          activeFilters.category = e.target.dataset.category;
+          renderFilteredAttractions();
+        });
       });
+      
+      document.querySelectorAll('#parkFilters .filter-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          document.querySelectorAll('#parkFilters .filter-chip').forEach(c => c.classList.remove('active'));
+          e.target.classList.add('active');
+          activeFilters.park = e.target.dataset.park;
+          renderFilteredAttractions();
+        });
+      });
+      
+      // Initial render
+      renderFilteredAttractions();
+      
+      function renderFilteredAttractions() {
+        const attractionsList = document.getElementById('attractionsList');
+        attractionsList.innerHTML = '';
+        
+        const filtered = allAttractions.filter(attr => {
+          const categoryMatch = activeFilters.category === 'all' || attr.category === activeFilters.category;
+          const parkMatch = activeFilters.park === 'all' || attr.park === activeFilters.park;
+          return categoryMatch && parkMatch;
+        });
+        
+        if (filtered.length === 0) {
+          attractionsList.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--color-text-muted);">No attractions match filters</div>';
+          return;
+        }
+        
+        filtered.forEach(attr => {
+          const card = document.createElement('div');
+          card.className = 'attraction-card';
+          card.draggable = true;
+          card.dataset.attraction = JSON.stringify(attr);
+          card.innerHTML = `
+            <div class="attraction-name">${attr.category} ${attr.name}</div>
+            <div class="attraction-park">${attr.park} • ${attr.type}</div>
+          `;
+          card.addEventListener('dragstart', handleDragStart);
+          card.addEventListener('dragend', handleDragEnd);
+          attractionsList.appendChild(card);
+        });
+      }
 
       // Auto-generate button
       document.getElementById('autoGenerateBtn').addEventListener('click', () => {
-        if (!submissionsData || submissionsData.length === 0) {
-          alert('No survey data available to generate itinerary.');
+        const filteredSubs = getFilteredSubmissions();
+        if (!filteredSubs || filteredSubs.length === 0) {
+          alert('No survey data available for selected chaperone group.');
           return;
         }
-        generateSuggestedItinerary(submissionsData, attractions, schedule);
+        const chaperoneText = activeFilters.chaperone === 'all' ? 'all students' : activeFilters.chaperone;
+        if (confirm(`Generate itinerary based on survey data from ${chaperoneText}?`)) {
+          generateSuggestedItinerary(filteredSubs, allAttractions, schedule);
+        }
       });
 
       // Clear schedule button

@@ -41,8 +41,10 @@
     <label>Instrument / Section</label>
     <input name="instrument" />
 
-    <label>Chaperone Group (if known)</label>
-    <input name="group_name" />
+    <label>Chaperone</label>
+    <select name="group_name" id="group_name" required>
+      <option value="">Loading chaperones...</option>
+    </select>
 
     <label>Have you ever been to Universal Orlando?</label>
     <select name="been_before">
@@ -109,14 +111,41 @@
     // causing `initializeAppCheck` to be undefined. Removed.
 
     import { db, auth, ensureAnonymousAuth, serverTimestamp } from './firebase-init.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     // Safety check: if App Check debug token was enabled, warn so you don't ship it to production.
     if (self.FIREBASE_APPCHECK_DEBUG_TOKEN) {
       console.warn('App Check debug token is enabled (firebase-init.js). Ensure this is disabled before publishing to production.');
     }
 
-    const form = document.getElementById('prefForm');
+    const form = document.getElementById('prefsForm');
+    
+    // Load chaperones from Firestore
+    async function loadChaperones() {
+      try {
+        const chapsSnap = await getDocs(collection(db, 'chaperones'));
+        const chaperones = chapsSnap.docs.map(d => d.data().name).sort();
+        const select = document.getElementById('group_name');
+        select.innerHTML = '<option value="">Select your chaperone</option>';
+        
+        if (chaperones.length === 0) {
+          select.innerHTML = '<option value="">No chaperones available</option>';
+        } else {
+          chaperones.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading chaperones:', err);
+        const select = document.getElementById('group_name');
+        select.innerHTML = '<option value="">Error loading chaperones</option>';
+      }
+    }
+    
+    loadChaperones();
     const statusEl = document.getElementById('status');
 
     form.addEventListener('submit', async (e) => {

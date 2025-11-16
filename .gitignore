@@ -19,3 +19,6 @@ serviceAccountKey.json
 # Optional artifacts
 screenshots/
 .env
+seed-chaperones.js
+
+# Note: seed-chaperones.html is allowed (browser-based, no secrets)

@@ -31,5 +31,13 @@ service cloud.firestore {
     match /submissions/{docId} {
       allow read: if isAdmin();
     }
+    
+    // Chaperones collection
+    match /chaperones/{docId} {
+      // Anyone can read chaperone list (for student form dropdown)
+      allow read: if true;
+      // Only admins can add/remove chaperones
+      allow create, delete: if isAdmin();
+    }
   }
 }
