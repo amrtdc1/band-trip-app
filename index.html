@@ -42,7 +42,7 @@
     <input name="instrument" />
 
     <label>Chaperone</label>
-    <select name="group_name" id="group_name" required>
+    <select name="chaperone" id="chaperone" required>
       <option value="">Loading chaperones...</option>
     </select>
 
@@ -119,13 +119,14 @@
     }
 
     const form = document.getElementById('prefsForm');
+    let chaperonesLoaded = false;
     
     // Load chaperones from Firestore
     async function loadChaperones() {
       try {
         const chapsSnap = await getDocs(collection(db, 'chaperones'));
         const chaperones = chapsSnap.docs.map(d => d.data().name).sort();
-        const select = document.getElementById('group_name');
+        const select = document.getElementById('chaperone');
         select.innerHTML = '<option value="">Select your chaperone</option>';
         
         if (chaperones.length === 0) {
@@ -138,10 +139,12 @@
             select.appendChild(option);
           });
         }
+        chaperonesLoaded = true;
       } catch (err) {
         console.error('Error loading chaperones:', err);
-        const select = document.getElementById('group_name');
+        const select = document.getElementById('chaperone');
         select.innerHTML = '<option value="">Error loading chaperones</option>';
+        chaperonesLoaded = true; // Allow submission even if loading fails
       }
     }
     
@@ -156,7 +159,7 @@
       const payload = {
         student_name: fd.get('student_name')?.trim(),
         instrument: fd.get('instrument') || "",
-        group_name: fd.get('group_name') || "",
+        chaperone: fd.get('chaperone') || "",
         been_before: fd.get('been_before') || "",
         ridden_coasters_before: fd.get('ridden_coasters_before') || "",
         coaster_comfort: parseInt(fd.get('coaster_comfort') || 0, 10),
