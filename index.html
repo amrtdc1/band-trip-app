@@ -96,6 +96,32 @@
       <label><input type="checkbox" name="sensitivities" value="None"> None</label>
     </div>
 
+    <label class="required">Dietary restrictions or food allergies</label>
+    <div class="chips">
+      <label><input type="checkbox" name="dietary_restrictions" value="No restrictions" checked> No restrictions</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Vegetarian"> Vegetarian</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Vegan"> Vegan</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Gluten-free"> Gluten-free / Celiac</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Dairy-free"> Dairy-free / Lactose intolerant</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Nut allergies"> Nut allergies</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Shellfish allergy"> Shellfish allergy</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Kosher"> Kosher</label>
+      <label><input type="checkbox" name="dietary_restrictions" value="Halal"> Halal</label>
+    </div>
+
+    <label>Food preferences (select all that apply)</label>
+    <div class="chips">
+      <label><input type="checkbox" name="food_preferences" value="American"> American (burgers, fries)</label>
+      <label><input type="checkbox" name="food_preferences" value="Italian"> Italian (pizza, pasta)</label>
+      <label><input type="checkbox" name="food_preferences" value="Asian"> Asian cuisine</label>
+      <label><input type="checkbox" name="food_preferences" value="Mexican"> Mexican/Tex-Mex</label>
+      <label><input type="checkbox" name="food_preferences" value="Breakfast"> Breakfast foods</label>
+      <label><input type="checkbox" name="food_preferences" value="Seafood"> Seafood</label>
+      <label><input type="checkbox" name="food_preferences" value="Sandwiches"> Sandwiches/wraps</label>
+      <label><input type="checkbox" name="food_preferences" value="Salads"> Salads</label>
+      <label><input type="checkbox" name="food_preferences" value="Not picky"> Not picky / will eat anything</label>
+    </div>
+
     <label>Top Interests (select up to 5)</label>
     <div class="chips">
       <label><input type="checkbox" name="top_themes" value="Harry Potter"> Harry Potter</label>
@@ -205,6 +231,8 @@
         ridden_coasters_before: fd.get('ridden_coasters_before') || "",
         coaster_comfort: parseInt(fd.get('coaster_comfort') || 0, 10),
         sensitivities: fd.getAll('sensitivities'),
+        dietary_restrictions: fd.getAll('dietary_restrictions').filter(Boolean),
+        food_preferences: fd.getAll('food_preferences').filter(Boolean),
         top_themes: fd.getAll('top_themes').filter(Boolean),
         avoid_ride_list: fd.getAll('avoid_ride_list').filter(Boolean),
         usf_choices: fd.get('usf_choices') || "",
