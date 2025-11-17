@@ -5,7 +5,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app-check.js";
 
 // Firebase configuration (safe to expose publicly)
 const firebaseConfig = {
@@ -21,7 +21,7 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// App Check with ReCaptcha Enterprise for production
+// App Check with ReCaptcha v3 for production
 // Debug token only enabled for localhost (not on GitHub Pages)
 if (location && (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '::1')) {
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
@@ -33,7 +33,7 @@ if (location && (location.hostname === 'localhost' || location.hostname === '127
 // Initialize App Check with error handling
 try {
   initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider("6Ld8SQ0sAAAAAF_xhbvIP1n1tj6BbJr-_gnW_loM"),
+    provider: new ReCaptchaV3Provider("6Ld8SQ0sAAAAAF_xhbvIP1n1tj6BbJr-_gnW_loM"),
     isTokenAutoRefreshEnabled: true
   });
 } catch (err) {
